@@ -6,20 +6,28 @@
     <title>Food Randomizer Wheel</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             text-align: center;
-            background-color: #f9f9f9;
+            background-color: #f5f5f5;
+            color: #333;
         }
         
         h1 {
             color: #e74c3c;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
         .container {
             margin-top: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
         }
         
         .wheel-area {
@@ -29,6 +37,7 @@
             align-items: flex-start;
             margin: 30px 0;
             flex-wrap: wrap;
+            gap: 20px;
         }
         
         .wheel-container {
@@ -47,6 +56,7 @@
             transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
             transform: rotate(0deg);
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 5px solid white;
         }
         
         .wheel-slice {
@@ -62,7 +72,7 @@
         
         .marker {
             position: absolute;
-            top: -10px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
@@ -71,6 +81,7 @@
             border-right: 15px solid transparent;
             border-top: 30px solid #e74c3c;
             z-index: 10;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
         }
         
         .items-list {
@@ -78,23 +89,48 @@
             max-height: 300px;
             overflow-y: auto;
             margin-top: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 1px solid #eee;
+            border-radius: 8px;
             padding: 10px;
             box-sizing: border-box;
             background-color: white;
+            scrollbar-width: thin;
+        }
+        
+        .items-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .items-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        
+        .items-list::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 8px;
+        }
+        
+        .items-list::-webkit-scrollbar-thumb:hover {
+            background: #ccc;
         }
         
         .item-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 10px;
-            border-bottom: 1px solid #eee;
+            padding: 8px 10px;
+            border-bottom: 1px solid #f5f5f5;
             align-items: center;
+            transition: background-color 0.3s;
+            border-radius: 4px;
         }
         
         .item-row:last-child {
             border-bottom: none;
+        }
+        
+        .item-row:hover {
+            background-color: #f9f9f9;
         }
         
         .item-color {
@@ -102,6 +138,7 @@
             height: 20px;
             border-radius: 50%;
             margin-right: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
         }
         
         .item-name {
@@ -110,6 +147,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-size: 14px;
         }
         
         .items-container {
@@ -123,39 +161,60 @@
             width: 30px;
             text-align: right;
             margin-right: 10px;
-            color: #7f8c8d;
+            color: #999;
+            font-size: 12px;
         }
         
         #wheel-items {
             width: 90%;
             height: 150px;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-bottom: 10px;
             font-size: 16px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        #wheel-items:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         
         button {
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             margin: 5px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 16px;
         }
         
         button:hover {
             background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
         }
         
         button:disabled {
             background-color: #e0e0e0;
             color: #a0a0a0;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         #update-wheel {
@@ -165,50 +224,137 @@
             font-size: 16px;
         }
         
+        #update-wheel:hover {
+            background-color: #2980b9;
+        }
+        
         .result {
-            margin-top: 20px;
-            font-size: 20px;
+            margin: 20px auto;
+            font-size: 22px;
             font-weight: bold;
             color: #e74c3c;
             min-height: 30px;
-            background-color: #ffebee;
-            padding: 10px;
-            border-radius: 5px;
+            background-color: #fff5f5;
+            padding: 20px;
+            border-radius: 8px;
             display: none;
+            max-width: 500px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #e74c3c;
         }
         
         .result.visible {
             display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            animation: confetti-fall 3s ease-in forwards;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .history-container {
+            margin-top: 20px;
+            text-align: left;
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .history-item {
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .history-item span {
+            color: #e74c3c;
+            font-weight: bold;
         }
         
         .save-container {
             margin-top: 30px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #eee;
             padding-top: 20px;
         }
         
         #restaurant-name {
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 8px;
             border: 1px solid #ddd;
             margin-right: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        #restaurant-name:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         
         select {
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 8px;
             border: 1px solid #ddd;
             margin: 10px 0;
+            font-size: 16px;
+            min-width: 200px;
+            background-color: white;
         }
         
         .highlighted {
-            background-color: #ffe6e6;
+            background-color: #ffe6e6 !important;
+            font-weight: bold;
         }
         
         .item-count {
             font-size: 14px;
-            color: #7f8c8d;
+            color: #777;
             margin-bottom: 10px;
+            background-color: #f9f9f9;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .wheel-area {
+                flex-direction: column;
+            }
+            
+            .wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -233,9 +379,17 @@
             </div>
         </div>
         
-        <button id="spin-button">Spin the Wheel!</button>
+        <div class="button-group" style="display: flex; justify-content: center; gap: 10px;">
+            <button id="spin-button">Spin the Wheel!</button>
+            <button id="clear-button">Clear All</button>
+        </div>
         
         <div class="result" id="result"></div>
+        
+        <div id="history-container" class="history-container" style="display: none;">
+            <h3>Recent Selections</h3>
+            <div id="history-list"></div>
+        </div>
         
         <div class="save-container">
             <h3>Save/Load Restaurant Menu</h3>
@@ -257,6 +411,7 @@
         const itemsList = document.getElementById('items-list');
         const itemCount = document.getElementById('item-count');
         const spinButton = document.getElementById('spin-button');
+        const clearButton = document.getElementById('clear-button');
         const resultDiv = document.getElementById('result');
         const restaurantNameInput = document.getElementById('restaurant-name');
         const saveMenuButton = document.getElementById('save-menu');
@@ -264,24 +419,31 @@
         const loadMenuButton = document.getElementById('load-menu');
         const deleteMenuButton = document.getElementById('delete-menu');
         const updateWheelButton = document.getElementById('update-wheel');
+        const historyContainer = document.getElementById('history-container');
+        const historyList = document.getElementById('history-list');
         
         // State
         let foods = [];
         let restaurants = JSON.parse(localStorage.getItem('restaurants') || '{}');
+        let history = JSON.parse(localStorage.getItem('food_history') || '[]');
         let isSpinning = false;
         let selectedIndex = -1;
         
-        // Colors for wheel slices
+        // Colors for wheel slices - more vibrant colors
         const colors = [
             '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
             '#9b59b6', '#1abc9c', '#d35400', '#34495e',
             '#1f618d', '#c0392b', '#27ae60', '#f1c40f', 
-            '#8e44ad', '#16a085', '#e67e22', '#2c3e50'
+            '#8e44ad', '#16a085', '#e67e22', '#2c3e50',
+            '#0097e6', '#e84118', '#44bd32', '#fbc531',
+            '#8c7ae6', '#00a8ff', '#c23616', '#44bd32',
+            '#0097e6', '#e84118', '#44bd32', '#fbc531'
         ];
         
         // Initialize
         function init() {
             updateSavedRestaurants();
+            updateHistoryDisplay();
         }
         
         // Update the wheel from textarea
@@ -294,6 +456,14 @@
             foods = [...items];
             updateItemsList();
             updateWheel();
+            
+            if (foods.length > 0) {
+                spinButton.disabled = false;
+                clearButton.disabled = false;
+            } else {
+                spinButton.disabled = true;
+                clearButton.disabled = true;
+            }
         }
         
         // Update the items list display
@@ -382,6 +552,81 @@
             }
         }
         
+        // Create confetti effect
+        function createConfetti() {
+            const confettiCount = 100;
+            const container = document.body;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Random position, color, size, and delay
+                const left = Math.random() * 100;
+                const confettiColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+                const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                const size = Math.random() * 10 + 5;
+                const delay = Math.random() * 3;
+                
+                confetti.style.left = `${left}vw`;
+                confetti.style.backgroundColor = color;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, (delay + 3) * 1000); // 3s for animation + delay
+            }
+        }
+        
+        // Add to history
+        function addToHistory(food) {
+            const timestamp = new Date().toLocaleString();
+            history.unshift({ food, timestamp });
+            
+            // Limit history to 10 items
+            if (history.length > 10) {
+                history.pop();
+            }
+            
+            localStorage.setItem('food_history', JSON.stringify(history));
+            updateHistoryDisplay();
+        }
+        
+        // Update history display
+        function updateHistoryDisplay() {
+            if (history.length === 0) {
+                historyContainer.style.display = 'none';
+                return;
+            }
+            
+            historyContainer.style.display = 'block';
+            historyList.innerHTML = '';
+            
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `${item.timestamp}: <span>${item.food}</span>`;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Clear all foods
+        function clearAll() {
+            foods = [];
+            const textarea = document.getElementById('wheel-items');
+            textarea.value = '';
+            updateItemsList();
+            updateWheel();
+            resultDiv.classList.remove('visible');
+            spinButton.disabled = true;
+            clearButton.disabled = true;
+        }
+        
         // Spin the wheel
         function spinWheel() {
             // Don't allow spinning if already spinning or no foods
@@ -431,12 +676,19 @@
             
             // Show result after spinning is complete
             setTimeout(() => {
-                resultDiv.innerText = `You should order: ${foods[randomIndex]}`;
+                const selectedFood = foods[randomIndex];
+                resultDiv.innerText = `You should order: ${selectedFood}`;
                 resultDiv.classList.add('visible');
                 highlightItem(randomIndex);
                 isSpinning = false;
                 selectedIndex = randomIndex;
                 spinButton.disabled = false; // Re-enable button
+                
+                // Create celebration effect
+                createConfetti();
+                
+                // Add to history
+                addToHistory(selectedFood);
                 
                 // Reset for next spin after a delay
                 setTimeout(() => {
@@ -456,6 +708,17 @@
                 localStorage.setItem('restaurants', JSON.stringify(restaurants));
                 updateSavedRestaurants();
                 restaurantNameInput.value = '';
+                
+                // Show success message
+                const savedMessage = document.createElement('div');
+                savedMessage.textContent = `Menu "${restaurantName}" saved successfully!`;
+                savedMessage.style.color = '#2ecc71';
+                savedMessage.style.marginTop = '10px';
+                saveMenuButton.parentNode.appendChild(savedMessage);
+                
+                setTimeout(() => {
+                    savedMessage.remove();
+                }, 3000);
             }
         }
         
@@ -480,6 +743,7 @@
                 textarea.value = foods.join('\n');
                 updateItemsList();
                 updateWheel();
+                spinButton.disabled = false;
             }
         }
         
@@ -487,17 +751,18 @@
         function deleteMenu() {
             const selectedRestaurant = savedRestaurantsSelect.value;
             if (selectedRestaurant && restaurants[selectedRestaurant]) {
-                delete restaurants[selectedRestaurant];
-                localStorage.setItem('restaurants', JSON.stringify(restaurants));
-                updateSavedRestaurants();
+                if (confirm(`Are you sure you want to delete "${selectedRestaurant}"?`)) {
+                    delete restaurants[selectedRestaurant];
+                    localStorage.setItem('restaurants', JSON.stringify(restaurants));
+                    updateSavedRestaurants();
+                }
             }
         }
         
         // Event listeners
         updateWheelButton.addEventListener('click', updateWheelFromTextarea);
-        
         spinButton.addEventListener('click', spinWheel);
-        
+        clearButton.addEventListener('click', clearAll);
         saveMenuButton.addEventListener('click', saveMenu);
         loadMenuButton.addEventListener('click', loadMenu);
         deleteMenuButton.addEventListener('click', deleteMenu);
@@ -505,6 +770,7 @@
         // Initialize the app
         init();
         initializeTextarea();
+        updateWheelFromTextarea(); // Initialize button states
     </script>
 </body>
 </html>
