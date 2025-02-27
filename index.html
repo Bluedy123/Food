@@ -18,6 +18,11 @@
             color: #e74c3c;
         }
         
+        .wheel-text {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-weight: bold !important;
+        }
+        
         .container {
             margin-top: 20px;
         }
@@ -48,7 +53,7 @@
             left: 0;
             top: 0;
             border-radius: 0 0 0 100%;
-            overflow: hidden;
+            overflow: visible;
             background: #3498db;
             text-align: right;
             padding-right: 20px;
@@ -264,12 +269,17 @@
                 // Create a rotated text element for better visibility
                 const textElement = document.createElement('div');
                 textElement.innerText = food;
+                textElement.classList.add('wheel-text');
                 textElement.style.transform = `rotate(${90 - sliceAngle/2}deg)`;
                 textElement.style.transformOrigin = 'right center';
                 textElement.style.position = 'absolute';
-                textElement.style.right = '20px';
-                textElement.style.width = '100px';
+                textElement.style.right = '25px';
+                textElement.style.width = '120px';
                 textElement.style.textAlign = 'right';
+                textElement.style.fontSize = foods.length > 20 ? '9px' : foods.length > 10 ? '11px' : '14px';
+                textElement.style.fontWeight = 'bold';
+                textElement.style.overflow = 'visible';
+                textElement.style.whiteSpace = 'nowrap';
                 
                 slice.appendChild(textElement);
                 wheel.appendChild(slice);
