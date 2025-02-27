@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             text-align: center;
@@ -18,21 +18,24 @@
             color: #e74c3c;
         }
         
-        .wheel-text {
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            font-weight: bold !important;
-            pointer-events: none; /* Prevents text from interfering with wheel */
-        }
-        
         .container {
             margin-top: 20px;
+        }
+        
+        .wheel-area {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 30px 0;
+            flex-wrap: wrap;
         }
         
         .wheel-container {
             position: relative;
             width: 300px;
             height: 300px;
-            margin: 30px auto;
+            margin: 0 auto 30px auto;
         }
         
         .wheel {
@@ -54,17 +57,7 @@
             left: 0;
             top: 0;
             border-radius: 0 0 0 100%;
-            overflow: visible;
             background: #3498db;
-            text-align: right;
-            padding-right: 20px;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            font-weight: bold;
-            font-size: 12px;
-            color: white;
         }
         
         .marker {
@@ -80,12 +73,67 @@
             z-index: 10;
         }
         
-        #food-input {
-            width: 80%;
+        .items-list {
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             padding: 10px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .item-row:last-child {
+            border-bottom: none;
+        }
+        
+        .item-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
             margin-right: 10px;
+        }
+        
+        .item-name {
+            flex-grow: 1;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .items-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .item-index {
+            width: 30px;
+            text-align: right;
+            margin-right: 10px;
+            color: #7f8c8d;
+        }
+        
+        #wheel-items {
+            width: 90%;
+            height: 150px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 16px;
         }
         
         button {
@@ -103,37 +151,11 @@
             background-color: #c0392b;
         }
         
-        .food-list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 20px 0;
-            gap: 10px;
-        }
-        
-        .food-item {
+        #update-wheel {
             background-color: #3498db;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .food-item span {
-            margin-right: 5px;
-        }
-        
-        .remove-food {
-            cursor: pointer;
-            background-color: rgba(255,255,255,0.3);
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
+            width: 90%;
+            padding: 12px;
+            font-size: 16px;
         }
         
         .result {
@@ -142,6 +164,14 @@
             font-weight: bold;
             color: #e74c3c;
             min-height: 30px;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .result.visible {
+            display: block;
         }
         
         .save-container {
@@ -150,11 +180,28 @@
             padding-top: 20px;
         }
         
+        #restaurant-name {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin-right: 10px;
+        }
+        
         select {
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #ddd;
             margin: 10px 0;
+        }
+        
+        .highlighted {
+            background-color: #ffe6e6;
+        }
+        
+        .item-count {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -163,15 +210,20 @@
     
     <div class="container">
         <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;">
-            <textarea id="wheel-items" placeholder="Enter your food options here, one per line" rows="8" style="width: 90%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-size: 16px;"></textarea>
-            <button id="update-wheel" style="background-color: #3498db; width: 90%; padding: 12px; font-size: 16px;">Update Wheel</button>
+            <textarea id="wheel-items" placeholder="Enter your food options here, one per line"></textarea>
+            <button id="update-wheel">Update Wheel</button>
         </div>
         
-        <div class="food-list" id="food-list" style="margin-bottom: 20px;"></div>
-        
-        <div class="wheel-container">
-            <div class="marker"></div>
-            <div class="wheel" id="wheel"></div>
+        <div class="wheel-area">
+            <div class="wheel-container">
+                <div class="marker"></div>
+                <div class="wheel" id="wheel"></div>
+            </div>
+            
+            <div class="items-container">
+                <div class="item-count" id="item-count"></div>
+                <div class="items-list" id="items-list"></div>
+            </div>
         </div>
         
         <button id="spin-button">Spin the Wheel!</button>
@@ -194,8 +246,9 @@
 
     <script>
         // Elements
-        const foodList = document.getElementById('food-list');
         const wheel = document.getElementById('wheel');
+        const itemsList = document.getElementById('items-list');
+        const itemCount = document.getElementById('item-count');
         const spinButton = document.getElementById('spin-button');
         const resultDiv = document.getElementById('result');
         const restaurantNameInput = document.getElementById('restaurant-name');
@@ -209,12 +262,14 @@
         let foods = [];
         let restaurants = JSON.parse(localStorage.getItem('restaurants') || '{}');
         let isSpinning = false;
-        let isEditMode = false;
+        let selectedIndex = -1;
         
         // Colors for wheel slices
         const colors = [
             '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
-            '#9b59b6', '#1abc9c', '#d35400', '#34495e'
+            '#9b59b6', '#1abc9c', '#d35400', '#34495e',
+            '#1f618d', '#c0392b', '#27ae60', '#f1c40f', 
+            '#8e44ad', '#16a085', '#e67e22', '#2c3e50'
         ];
         
         // Initialize
@@ -225,24 +280,43 @@
         // Update the wheel from textarea
         function updateWheelFromTextarea() {
             const textarea = document.getElementById('wheel-items');
-            const items = textarea.value.split('\n').map(item => item.trim()).filter(item => item !== '');
+            const items = textarea.value.split('\n')
+                .map(item => item.trim())
+                .filter(item => item !== '');
             
             foods = [...items];
-            updateFoodList();
+            updateItemsList();
             updateWheel();
         }
         
-        // Update the food list display
-        function updateFoodList() {
-            foodList.innerHTML = '';
-            if (foods.length > 0) {
-                const countText = document.createElement('div');
-                countText.style.fontSize = '14px';
-                countText.style.color = '#7f8c8d';
-                countText.style.marginBottom = '10px';
-                countText.innerText = `${foods.length} items on the wheel`;
-                foodList.appendChild(countText);
-            }
+        // Update the items list display
+        function updateItemsList() {
+            itemsList.innerHTML = '';
+            itemCount.textContent = `${foods.length} items on the wheel`;
+            
+            foods.forEach((food, index) => {
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.dataset.index = index;
+                
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'item-index';
+                indexSpan.textContent = (index + 1) + '.';
+                
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'item-color';
+                colorDiv.style.backgroundColor = colors[index % colors.length];
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'item-name';
+                nameDiv.textContent = food;
+                
+                row.appendChild(indexSpan);
+                row.appendChild(colorDiv);
+                row.appendChild(nameDiv);
+                
+                itemsList.appendChild(row);
+            });
         }
         
         // Initialize textarea with existing foods
@@ -266,43 +340,22 @@
                 slice.className = 'wheel-slice';
                 slice.style.transform = `rotate(${index * sliceAngle}deg)`;
                 slice.style.backgroundColor = colors[index % colors.length];
-                
-                // Create a rotated text element for better visibility
-                const textElement = document.createElement('div');
-                textElement.innerText = food;
-                textElement.classList.add('wheel-text');
-                
-                // Adjust text position and rotation based on number of items
-                const textRotation = 90 - sliceAngle/2;
-                textElement.style.transform = `rotate(${textRotation}deg)`;
-                textElement.style.transformOrigin = 'right center';
-                textElement.style.position = 'absolute';
-                
-                // Adjust right spacing based on number of items
-                const rightSpacing = foods.length > 30 ? 15 : foods.length > 20 ? 20 : 25;
-                textElement.style.right = `${rightSpacing}px`;
-                
-                // Adjust width based on number of items
-                const textWidth = foods.length > 30 ? 80 : foods.length > 20 ? 100 : 120;
-                textElement.style.width = `${textWidth}px`;
-                
-                textElement.style.textAlign = 'right';
-                
-                // Adjust font size based on number of items
-                const fontSize = 
-                    foods.length > 40 ? 7 :
-                    foods.length > 30 ? 8 :
-                    foods.length > 20 ? 9 :
-                    foods.length > 10 ? 11 : 14;
-                textElement.style.fontSize = `${fontSize}px`;
-                
-                textElement.style.fontWeight = 'bold';
-                textElement.style.overflow = 'visible';
-                textElement.style.whiteSpace = 'nowrap';
-                
-                slice.appendChild(textElement);
                 wheel.appendChild(slice);
             });
+        }
+        
+        // Highlight an item in the list
+        function highlightItem(index) {
+            // Clear previous highlight
+            const items = itemsList.querySelectorAll('.item-row');
+            items.forEach(item => item.classList.remove('highlighted'));
+            
+            // Add highlight to selected item
+            if (index >= 0 && index < items.length) {
+                items[index].classList.add('highlighted');
+                // Scroll to make sure the highlighted item is visible
+                items[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
         
         // Spin the wheel
@@ -310,6 +363,7 @@
             if (isSpinning || foods.length === 0) return;
             
             isSpinning = true;
+            resultDiv.classList.remove('visible');
             resultDiv.innerText = '';
             
             // Use multiple sources of randomness for true randomness
@@ -343,7 +397,10 @@
             // Show result after spinning is complete
             setTimeout(() => {
                 resultDiv.innerText = `You should order: ${foods[randomIndex]}`;
+                resultDiv.classList.add('visible');
+                highlightItem(randomIndex);
                 isSpinning = false;
+                selectedIndex = randomIndex;
             }, 5000);
         }
         
@@ -377,7 +434,7 @@
                 foods = [...restaurants[selectedRestaurant]];
                 const textarea = document.getElementById('wheel-items');
                 textarea.value = foods.join('\n');
-                updateFoodList();
+                updateItemsList();
                 updateWheel();
             }
         }
