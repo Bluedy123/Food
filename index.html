@@ -507,9 +507,17 @@
             
             const sliceAngle = 360 / foods.length;
             
-            foods.forEach((food, index) => {
-                const slice = document.createElement('div');
-                slice.className = 'wheel-slice';
+            // First build an array of slice data to match the list
+            const slices = foods.map((food, index) => ({
+                food,
+                color: colors[index % colors.length],
+                index
+            }));
+            
+            // Now create slices in the same order as the list
+            slices.forEach((slice, index) => {
+                const sliceElem = document.createElement('div');
+                sliceElem.className = 'wheel-slice';
                 
                 // Calculate the start and end angles for this slice
                 const startAngle = index * sliceAngle;
@@ -526,10 +534,15 @@
                 
                 // Create the clip path: center point to start point to end point
                 const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
-                slice.style.clipPath = clipPath;
+                sliceElem.style.clipPath = clipPath;
                 
-                slice.style.backgroundColor = colors[index % colors.length];
-                wheel.appendChild(slice);
+                // Use the exact same color as in the list
+                sliceElem.style.backgroundColor = slice.color;
+                
+                // Store the index for reference
+                sliceElem.dataset.index = slice.index;
+                
+                wheel.appendChild(sliceElem);
             });
         }
         
@@ -690,6 +703,8 @@
             const sliceAngle = 360 / foods.length;
             const extraSpins = 5; // Number of full rotations
             // We add the current rotation to ensure smooth continuation
+            // The wheel rotation needs to be calculated carefully to match the wheel's layout
+            // The 0th slice is at the top, and they go clockwise
             const finalAngle = currentRotation + (extraSpins * 360) + (360 - ((randomIndex * sliceAngle) % 360));
             
             // Apply the spin with a slight delay to ensure the browser has processed the reset
