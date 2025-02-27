@@ -454,15 +454,73 @@
             
             foods = [...items];
             
-            // Create a consistent color mapping for foods
-            const coloredFoods = assignColorsToFoods(foods);
-            
-            // Update the UI
-            updateItemsList(coloredFoods);
-            updateWheel(coloredFoods);
+            // First clear everything
+            itemsList.innerHTML = '';
+            wheel.innerHTML = '';
+            itemCount.textContent = `${foods.length} items on the wheel`;
             
             // Update button state
             spinButton.disabled = foods.length === 0;
+            
+            if (foods.length === 0) return;
+            
+            // Calculate angles
+            const sliceAngle = 360 / foods.length;
+            
+            // Create a one-to-one mapping with consistent indexes
+            foods.forEach((food, index) => {
+                // Choose color by index
+                const color = colors[index % colors.length];
+                
+                // CREATE LIST ITEM
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.dataset.index = index;
+                
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'item-index';
+                indexSpan.textContent = (index + 1) + '.';
+                
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'item-color';
+                colorDiv.style.backgroundColor = color;
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'item-name';
+                nameDiv.textContent = food;
+                
+                row.appendChild(indexSpan);
+                row.appendChild(colorDiv);
+                row.appendChild(nameDiv);
+                
+                itemsList.appendChild(row);
+                
+                // CREATE WHEEL SLICE with exact same color
+                const slice = document.createElement('div');
+                slice.className = 'wheel-slice';
+                
+                // Calculate angles
+                const startAngle = index * sliceAngle;
+                const endAngle = (index + 1) * sliceAngle;
+                
+                // Calculate clip path points
+                const startRad = (startAngle - 90) * (Math.PI / 180);
+                const endRad = (endAngle - 90) * (Math.PI / 180);
+                
+                const startX = 50 + 50 * Math.cos(startRad);
+                const startY = 50 + 50 * Math.sin(startRad);
+                const endX = 50 + 50 * Math.cos(endRad);
+                const endY = 50 + 50 * Math.sin(endRad);
+                
+                const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
+                slice.style.clipPath = clipPath;
+                
+                // Use EXACT same color as in list
+                slice.style.backgroundColor = color;
+                
+                slice.dataset.index = index;
+                wheel.appendChild(slice);
+            });
         }
         
         // Assign colors to foods consistently
@@ -766,15 +824,7 @@
                 foods = [...restaurants[selectedRestaurant]];
                 const textarea = document.getElementById('wheel-items');
                 textarea.value = foods.join('\n');
-                
-                // Create a consistent color mapping for foods
-                const coloredFoods = assignColorsToFoods(foods);
-                
-                // Update the UI
-                updateItemsList(coloredFoods);
-                updateWheel(coloredFoods);
-                
-                spinButton.disabled = false;
+                updateWheelFromTextarea();
             }
         }
         
