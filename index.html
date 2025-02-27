@@ -70,6 +70,18 @@
             background: #3498db;
         }
         
+        .slice-number {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px black;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+        
         .marker {
             position: absolute;
             top: -15px;
@@ -467,19 +479,58 @@
             // Calculate angles
             const sliceAngle = 360 / foods.length;
             
-            // Create a one-to-one mapping with consistent indexes
-            foods.forEach((food, index) => {
+            // Create wheel slices FIRST (opposite order from the list for correct alignment)
+            for (let i = 0; i < foods.length; i++) {
+                // We need to reverse the order for the wheel
+                const wheelIndex = (foods.length - 1) - i;
+                
+                // CREATE WHEEL SLICE
+                const slice = document.createElement('div');
+                slice.className = 'wheel-slice';
+                
+                // Calculate angles (note: using wheelIndex here)
+                const startAngle = wheelIndex * sliceAngle;
+                const endAngle = (wheelIndex + 1) * sliceAngle;
+                
+                // Calculate clip path points
+                const startRad = (startAngle - 90) * (Math.PI / 180);
+                const endRad = (endAngle - 90) * (Math.PI / 180);
+                
+                const startX = 50 + 50 * Math.cos(startRad);
+                const startY = 50 + 50 * Math.sin(startRad);
+                const endX = 50 + 50 * Math.cos(endRad);
+                const endY = 50 + 50 * Math.sin(endRad);
+                
+                const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
+                slice.style.clipPath = clipPath;
+                
+                // Use the same color for wheel and list
+                const color = colors[i % colors.length];
+                slice.style.backgroundColor = color;
+                
+                // Add a visible number to the slice for debugging
+                const sliceNumber = document.createElement('div');
+                sliceNumber.className = 'slice-number';
+                sliceNumber.textContent = i + 1; // 1-based numbering for users
+                slice.appendChild(sliceNumber);
+                
+                slice.dataset.index = i;
+                wheel.appendChild(slice);
+            }
+            
+            // Now create list items in normal order
+            foods.forEach((food, i) => {
                 // Choose color by index
-                const color = colors[index % colors.length];
+                const color = colors[i % colors.length];
                 
                 // CREATE LIST ITEM
                 const row = document.createElement('div');
                 row.className = 'item-row';
-                row.dataset.index = index;
+                row.dataset.index = i;
                 
                 const indexSpan = document.createElement('span');
                 indexSpan.className = 'item-index';
-                indexSpan.textContent = (index + 1) + '.';
+                indexSpan.textContent = (i + 1) + '.';
                 
                 const colorDiv = document.createElement('div');
                 colorDiv.className = 'item-color';
@@ -494,32 +545,6 @@
                 row.appendChild(nameDiv);
                 
                 itemsList.appendChild(row);
-                
-                // CREATE WHEEL SLICE with exact same color
-                const slice = document.createElement('div');
-                slice.className = 'wheel-slice';
-                
-                // Calculate angles
-                const startAngle = index * sliceAngle;
-                const endAngle = (index + 1) * sliceAngle;
-                
-                // Calculate clip path points
-                const startRad = (startAngle - 90) * (Math.PI / 180);
-                const endRad = (endAngle - 90) * (Math.PI / 180);
-                
-                const startX = 50 + 50 * Math.cos(startRad);
-                const startY = 50 + 50 * Math.sin(startRad);
-                const endX = 50 + 50 * Math.cos(endRad);
-                const endY = 50 + 50 * Math.sin(endRad);
-                
-                const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
-                slice.style.clipPath = clipPath;
-                
-                // Use EXACT same color as in list
-                slice.style.backgroundColor = color;
-                
-                slice.dataset.index = index;
-                wheel.appendChild(slice);
             });
         }
         
@@ -753,8 +778,10 @@
             // Calculate final rotation
             const sliceAngle = 360 / foods.length;
             const extraSpins = 5; // Number of full rotations
-            // We add the current rotation to ensure smooth continuation
-            const finalAngle = currentRotation + (extraSpins * 360) + (360 - ((randomIndex * sliceAngle) % 360));
+            
+            // Note: Because we reversed the wheel slice order, we need to calculate differently
+            // The 0-indexed food is at the top of the wheel 
+            const finalAngle = currentRotation + (extraSpins * 360) + (360 - (randomIndex * sliceAngle));
             
             // Apply the spin with a slight delay to ensure the browser has processed the reset
             setTimeout(() => {
