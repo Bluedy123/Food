@@ -161,7 +161,25 @@
             <button id="add-food">Add</button>
         </div>
         
+        <div>
+            <button id="add-multiple" style="margin-top: 10px; background-color: #3498db;">Add Multiple Items</button>
+        </div>
+        
+        <div id="multiple-inputs" style="display: none; margin-top: 15px;">
+            <textarea id="multiple-food-items" placeholder="Enter multiple items, one per line" rows="5" style="width: 80%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;"></textarea>
+            <button id="submit-multiple">Add All</button>
+            <button id="cancel-multiple" style="background-color: #95a5a6;">Cancel</button>
+        </div>
+        
+        <h3 style="margin-top: 20px;">Menu Items</h3>
         <div class="food-list" id="food-list"></div>
+        <div class="edit-mode-container" style="margin-top: 15px; display: none;" id="edit-mode-container">
+            <ul id="editable-list" style="list-style-type: none; padding: 0; text-align: left; max-height: 200px; overflow-y: auto;">
+            </ul>
+            <button id="save-edits" style="background-color: #2ecc71;">Save Changes</button>
+            <button id="cancel-edits" style="background-color: #95a5a6;">Cancel</button>
+        </div>
+        <button id="toggle-edit-mode" style="margin-top: 10px; background-color: #f39c12;">Edit List</button>
         
         <div class="wheel-container">
             <div class="marker"></div>
@@ -204,6 +222,7 @@
         let foods = [];
         let restaurants = JSON.parse(localStorage.getItem('restaurants') || '{}');
         let isSpinning = false;
+        let isEditMode = false;
         
         // Colors for wheel slices
         const colors = [
@@ -365,6 +384,148 @@
             }
         }
         
+        // Add multiple food items
+        function toggleMultipleInputs() {
+            const multipleInputs = document.getElementById('multiple-inputs');
+            multipleInputs.style.display = multipleInputs.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function addMultipleItems() {
+            const textarea = document.getElementById('multiple-food-items');
+            const items = textarea.value.split('\n').map(item => item.trim()).filter(item => item !== '');
+            
+            items.forEach(item => {
+                if (!foods.includes(item)) {
+                    foods.push(item);
+                }
+            });
+            
+            updateFoodList();
+            updateWheel();
+            textarea.value = '';
+            toggleMultipleInputs();
+        }
+        
+        // Edit mode functions
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            
+            const editModeContainer = document.getElementById('edit-mode-container');
+            const editButton = document.getElementById('toggle-edit-mode');
+            
+            if (isEditMode) {
+                editButton.innerText = 'Cancel Editing';
+                editButton.style.backgroundColor = '#e74c3c';
+                editModeContainer.style.display = 'block';
+                foodList.style.display = 'none';
+                
+                // Populate editable list
+                const editableList = document.getElementById('editable-list');
+                editableList.innerHTML = '';
+                
+                foods.forEach((food, index) => {
+                    const li = document.createElement('li');
+                    li.style.margin = '8px 0';
+                    li.style.display = 'flex';
+                    li.style.alignItems = 'center';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = food;
+                    input.className = 'edit-food-input';
+                    input.style.flex = '1';
+                    input.style.padding = '8px';
+                    input.style.borderRadius = '4px';
+                    input.style.border = '1px solid #ddd';
+                    input.style.marginRight = '5px';
+                    
+                    const moveUpBtn = document.createElement('button');
+                    moveUpBtn.innerHTML = '↑';
+                    moveUpBtn.style.padding = '5px 8px';
+                    moveUpBtn.style.marginRight = '5px';
+                    moveUpBtn.style.backgroundColor = '#3498db';
+                    moveUpBtn.style.color = 'white';
+                    moveUpBtn.style.border = 'none';
+                    moveUpBtn.style.borderRadius = '4px';
+                    moveUpBtn.style.cursor = 'pointer';
+                    moveUpBtn.onclick = () => moveItem(index, -1);
+                    
+                    const moveDownBtn = document.createElement('button');
+                    moveDownBtn.innerHTML = '↓';
+                    moveDownBtn.style.padding = '5px 8px';
+                    moveDownBtn.style.marginRight = '5px';
+                    moveDownBtn.style.backgroundColor = '#3498db';
+                    moveDownBtn.style.color = 'white';
+                    moveDownBtn.style.border = 'none';
+                    moveDownBtn.style.borderRadius = '4px';
+                    moveDownBtn.style.cursor = 'pointer';
+                    moveDownBtn.onclick = () => moveItem(index, 1);
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerHTML = '×';
+                    removeBtn.style.padding = '5px 8px';
+                    removeBtn.style.backgroundColor = '#e74c3c';
+                    removeBtn.style.color = 'white';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.borderRadius = '4px';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.onclick = () => removeEditItem(index);
+                    
+                    li.appendChild(input);
+                    li.appendChild(moveUpBtn);
+                    li.appendChild(moveDownBtn);
+                    li.appendChild(removeBtn);
+                    
+                    editableList.appendChild(li);
+                });
+            } else {
+                editButton.innerText = 'Edit List';
+                editButton.style.backgroundColor = '#f39c12';
+                editModeContainer.style.display = 'none';
+                foodList.style.display = 'flex';
+            }
+        }
+        
+        function saveEdits() {
+            const inputs = document.querySelectorAll('.edit-food-input');
+            foods = Array.from(inputs).map(input => input.value.trim()).filter(item => item !== '');
+            
+            updateFoodList();
+            updateWheel();
+            toggleEditMode();
+        }
+        
+        function moveItem(index, direction) {
+            if ((direction === -1 && index === 0) || (direction === 1 && index === foods.length - 1)) {
+                return;
+            }
+            
+            const newIndex = index + direction;
+            const editableList = document.getElementById('editable-list');
+            const items = editableList.children;
+            
+            if (direction === -1) {
+                editableList.insertBefore(items[index], items[index - 1]);
+            } else {
+                editableList.insertBefore(items[index + 1], items[index]);
+            }
+            
+            // Also update the inputs array for when we save
+            const inputs = document.querySelectorAll('.edit-food-input');
+            const values = Array.from(inputs).map(input => input.value.trim());
+            
+            [values[index], values[newIndex]] = [values[newIndex], values[index]];
+            
+            inputs.forEach((input, i) => {
+                input.value = values[i];
+            });
+        }
+        
+        function removeEditItem(index) {
+            const editableList = document.getElementById('editable-list');
+            editableList.removeChild(editableList.children[index]);
+        }
+        
         // Event listeners
         addButton.addEventListener('click', addFood);
         
@@ -384,6 +545,14 @@
         saveMenuButton.addEventListener('click', saveMenu);
         loadMenuButton.addEventListener('click', loadMenu);
         deleteMenuButton.addEventListener('click', deleteMenu);
+        
+        // New event listeners for multiple items and edit mode
+        document.getElementById('add-multiple').addEventListener('click', toggleMultipleInputs);
+        document.getElementById('submit-multiple').addEventListener('click', addMultipleItems);
+        document.getElementById('cancel-multiple').addEventListener('click', toggleMultipleInputs);
+        document.getElementById('toggle-edit-mode').addEventListener('click', toggleEditMode);
+        document.getElementById('save-edits').addEventListener('click', saveEdits);
+        document.getElementById('cancel-edits').addEventListener('click', toggleEditMode);
         
         // Initialize the app
         init();
