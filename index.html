@@ -51,12 +51,12 @@
         
         .wheel-slice {
             position: absolute;
-            width: 50%;
-            height: 50%;
-            transform-origin: bottom right;
+            width: 100%;
+            height: 100%;
+            transform-origin: center;
             left: 0;
             top: 0;
-            border-radius: 0 0 0 100%;
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
             background: #3498db;
         }
         
@@ -338,7 +338,24 @@
             foods.forEach((food, index) => {
                 const slice = document.createElement('div');
                 slice.className = 'wheel-slice';
-                slice.style.transform = `rotate(${index * sliceAngle}deg)`;
+                
+                // Calculate the start and end angles for this slice
+                const startAngle = index * sliceAngle;
+                const endAngle = (index + 1) * sliceAngle;
+                
+                // Create a custom clip path for this slice to ensure equal areas
+                const startRad = (startAngle - 90) * (Math.PI / 180);
+                const endRad = (endAngle - 90) * (Math.PI / 180);
+                
+                const startX = 50 + 50 * Math.cos(startRad);
+                const startY = 50 + 50 * Math.sin(startRad);
+                const endX = 50 + 50 * Math.cos(endRad);
+                const endY = 50 + 50 * Math.sin(endRad);
+                
+                // Create the clip path: center point to start point to end point
+                const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
+                slice.style.clipPath = clipPath;
+                
                 slice.style.backgroundColor = colors[index % colors.length];
                 wheel.appendChild(slice);
             });
