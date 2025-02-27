@@ -145,10 +145,17 @@
             cursor: pointer;
             font-weight: bold;
             margin: 5px;
+            transition: background-color 0.3s;
         }
         
         button:hover {
             background-color: #c0392b;
+        }
+        
+        button:disabled {
+            background-color: #e0e0e0;
+            color: #a0a0a0;
+            cursor: not-allowed;
         }
         
         #update-wheel {
@@ -377,11 +384,20 @@
         
         // Spin the wheel
         function spinWheel() {
+            // Don't allow spinning if already spinning or no foods
             if (isSpinning || foods.length === 0) return;
             
             isSpinning = true;
+            spinButton.disabled = true; // Disable button while spinning
             resultDiv.classList.remove('visible');
             resultDiv.innerText = '';
+            
+            // First, reset the wheel's transition and transform to ensure a clean start
+            wheel.style.transition = 'none';
+            wheel.style.transform = 'rotate(0deg)';
+            
+            // Force a reflow to ensure the transition reset is applied
+            void wheel.offsetWidth;
             
             // Use multiple sources of randomness for true randomness
             const now = Date.now();
@@ -407,9 +423,11 @@
             const extraSpins = 5; // Number of full rotations
             const finalAngle = extraSpins * 360 + (360 - (randomIndex * sliceAngle));
             
-            // Apply rotation
-            wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-            wheel.style.transform = `rotate(${finalAngle}deg)`;
+            // Start the spin with a small delay to ensure transition is applied properly
+            setTimeout(() => {
+                wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+                wheel.style.transform = `rotate(${finalAngle}deg)`;
+            }, 50);
             
             // Show result after spinning is complete
             setTimeout(() => {
@@ -418,7 +436,16 @@
                 highlightItem(randomIndex);
                 isSpinning = false;
                 selectedIndex = randomIndex;
-            }, 5000);
+                spinButton.disabled = false; // Re-enable button
+                
+                // Reset for next spin after a delay
+                setTimeout(() => {
+                    // We don't reset visually, but prepare the wheel for the next spin
+                    wheel.style.transition = 'none';
+                    const currentRotation = finalAngle % 360;
+                    wheel.style.transform = `rotate(${currentRotation}deg)`;
+                }, 1000);
+            }, 5100);
         }
         
         // Save current menu
