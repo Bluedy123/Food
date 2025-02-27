@@ -21,6 +21,7 @@
         .wheel-text {
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
             font-weight: bold !important;
+            pointer-events: none; /* Prevents text from interfering with wheel */
         }
         
         .container {
@@ -270,13 +271,31 @@
                 const textElement = document.createElement('div');
                 textElement.innerText = food;
                 textElement.classList.add('wheel-text');
-                textElement.style.transform = `rotate(${90 - sliceAngle/2}deg)`;
+                
+                // Adjust text position and rotation based on number of items
+                const textRotation = 90 - sliceAngle/2;
+                textElement.style.transform = `rotate(${textRotation}deg)`;
                 textElement.style.transformOrigin = 'right center';
                 textElement.style.position = 'absolute';
-                textElement.style.right = '25px';
-                textElement.style.width = '120px';
+                
+                // Adjust right spacing based on number of items
+                const rightSpacing = foods.length > 30 ? 15 : foods.length > 20 ? 20 : 25;
+                textElement.style.right = `${rightSpacing}px`;
+                
+                // Adjust width based on number of items
+                const textWidth = foods.length > 30 ? 80 : foods.length > 20 ? 100 : 120;
+                textElement.style.width = `${textWidth}px`;
+                
                 textElement.style.textAlign = 'right';
-                textElement.style.fontSize = foods.length > 20 ? '9px' : foods.length > 10 ? '11px' : '14px';
+                
+                // Adjust font size based on number of items
+                const fontSize = 
+                    foods.length > 40 ? 7 :
+                    foods.length > 30 ? 8 :
+                    foods.length > 20 ? 9 :
+                    foods.length > 10 ? 11 : 14;
+                textElement.style.fontSize = `${fontSize}px`;
+                
                 textElement.style.fontWeight = 'bold';
                 textElement.style.overflow = 'visible';
                 textElement.style.whiteSpace = 'nowrap';
