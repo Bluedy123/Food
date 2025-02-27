@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Randomizer Wheel</title>
+    <title>Food Randomizer</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -30,70 +30,52 @@
             padding: 20px;
         }
         
-        .wheel-area {
+        .randomizer-container {
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
             margin: 30px 0;
-            flex-wrap: wrap;
             gap: 20px;
         }
         
-        .wheel-container {
-            position: relative;
+        .food-display {
             width: 300px;
-            height: 300px;
-            margin: 0 auto 30px auto;
-        }
-        
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
+            height: 200px;
+            border-radius: 10px;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0 auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-            transform: rotate(0deg);
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border: 5px solid white;
         }
         
-        .wheel-slice {
+        .food-display.animated {
+            animation: colorChange 1s infinite;
+        }
+        
+        @keyframes colorChange {
+            0% { background-color: #3498db; }
+            33% { background-color: #e74c3c; }
+            66% { background-color: #2ecc71; }
+            100% { background-color: #3498db; }
+        }
+        
+        .food-display::before {
+            content: '';
             position: absolute;
             width: 100%;
             height: 100%;
-            transform-origin: center;
-            left: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
             top: 0;
-            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
-            background: #3498db;
-        }
-        
-        .slice-number {
-            position: absolute;
-            color: white;
-            font-weight: bold;
-            font-size: 20px;
-            text-shadow: 1px 1px 2px black;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: none;
-        }
-        
-        .marker {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 30px solid #e74c3c;
-            z-index: 10;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+            left: 0;
         }
         
         .items-list {
@@ -145,21 +127,14 @@
             background-color: #f9f9f9;
         }
         
-        .item-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 10px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        
         .item-name {
             flex-grow: 1;
             text-align: left;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-size: 14px;
+            font-size: 16px;
+            padding-left: 10px;
         }
         
         .items-container {
@@ -174,7 +149,7 @@
             text-align: right;
             margin-right: 10px;
             color: #999;
-            font-size: 12px;
+            font-size: 14px;
         }
         
         #wheel-items {
@@ -229,14 +204,14 @@
             box-shadow: none;
         }
         
-        #update-wheel {
+        #update-list {
             background-color: #3498db;
             width: 90%;
             padding: 12px;
             font-size: 16px;
         }
         
-        #update-wheel:hover {
+        #update-list:hover {
             background-color: #2980b9;
         }
         
@@ -350,13 +325,13 @@
         
         /* Mobile responsive styles */
         @media (max-width: 768px) {
-            .wheel-area {
+            .randomizer-container {
                 flex-direction: column;
             }
             
-            .wheel-container {
+            .food-display {
                 width: 250px;
-                height: 250px;
+                height: 170px;
             }
             
             h1 {
@@ -370,18 +345,17 @@
     </style>
 </head>
 <body>
-    <h1>Food Randomizer Wheel</h1>
+    <h1>Food Randomizer</h1>
     
     <div class="container">
         <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;">
             <textarea id="wheel-items" placeholder="Enter your food options here, one per line"></textarea>
-            <button id="update-wheel">Update Wheel</button>
+            <button id="update-list">Update List</button>
         </div>
         
-        <div class="wheel-area">
-            <div class="wheel-container">
-                <div class="marker"></div>
-                <div class="wheel" id="wheel"></div>
+        <div class="randomizer-container">
+            <div class="food-display" id="food-display">
+                Press Randomize
             </div>
             
             <div class="items-container">
@@ -391,10 +365,8 @@
         </div>
         
         <div style="margin: 20px 0;">
-            <button id="spin-button">Spin the Wheel!</button>
+            <button id="randomize-button">Randomize!</button>
         </div>
-        
-        <div class="result" id="result"></div>
         
         <div id="history-container" class="history-container" style="display: none;">
             <h3>Recent Selections</h3>
@@ -417,17 +389,16 @@
 
     <script>
         // Elements
-        const wheel = document.getElementById('wheel');
+        const foodDisplay = document.getElementById('food-display');
         const itemsList = document.getElementById('items-list');
         const itemCount = document.getElementById('item-count');
-        const spinButton = document.getElementById('spin-button');
-        const resultDiv = document.getElementById('result');
+        const randomizeButton = document.getElementById('randomize-button');
         const restaurantNameInput = document.getElementById('restaurant-name');
         const saveMenuButton = document.getElementById('save-menu');
         const savedRestaurantsSelect = document.getElementById('saved-restaurants');
         const loadMenuButton = document.getElementById('load-menu');
         const deleteMenuButton = document.getElementById('delete-menu');
-        const updateWheelButton = document.getElementById('update-wheel');
+        const updateListButton = document.getElementById('update-list');
         const historyContainer = document.getElementById('history-container');
         const historyList = document.getElementById('history-list');
         
@@ -435,30 +406,19 @@
         let foods = [];
         let restaurants = JSON.parse(localStorage.getItem('restaurants') || '{}');
         let history = JSON.parse(localStorage.getItem('food_history') || '[]');
-        let isSpinning = false;
+        let isRandomizing = false;
         let selectedIndex = -1;
-        
-        // Colors for wheel slices - more vibrant colors
-        const colors = [
-            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
-            '#9b59b6', '#1abc9c', '#d35400', '#34495e',
-            '#1f618d', '#c0392b', '#27ae60', '#f1c40f', 
-            '#8e44ad', '#16a085', '#e67e22', '#2c3e50',
-            '#0097e6', '#e84118', '#44bd32', '#fbc531',
-            '#8c7ae6', '#00a8ff', '#c23616', '#44bd32',
-            '#0097e6', '#e84118', '#44bd32', '#fbc531'
-        ];
         
         // Initialize
         function init() {
             updateSavedRestaurants();
             updateHistoryDisplay();
-            // Initialize the wheel
-            updateWheelFromTextarea();
+            // Initialize the list
+            updateFoodList();
         }
         
-        // Update the wheel from textarea
-        function updateWheelFromTextarea() {
+        // Update the food list from textarea
+        function updateFoodList() {
             const textarea = document.getElementById('wheel-items');
             const items = textarea.value.split('\n')
                 .map(item => item.trim())
@@ -466,121 +426,38 @@
             
             foods = [...items];
             
-            // First clear everything
-            itemsList.innerHTML = '';
-            wheel.innerHTML = '';
-            itemCount.textContent = `${foods.length} items on the wheel`;
+            // Update the UI
+            updateItemsList();
             
             // Update button state
-            spinButton.disabled = foods.length === 0;
+            randomizeButton.disabled = foods.length === 0;
             
-            if (foods.length === 0) return;
-            
-            // Calculate angles
-            const sliceAngle = 360 / foods.length;
-            
-            // Create wheel slices FIRST (opposite order from the list for correct alignment)
-            for (let i = 0; i < foods.length; i++) {
-                // We need to reverse the order for the wheel
-                const wheelIndex = (foods.length - 1) - i;
-                
-                // CREATE WHEEL SLICE
-                const slice = document.createElement('div');
-                slice.className = 'wheel-slice';
-                
-                // Calculate angles (note: using wheelIndex here)
-                const startAngle = wheelIndex * sliceAngle;
-                const endAngle = (wheelIndex + 1) * sliceAngle;
-                
-                // Calculate clip path points
-                const startRad = (startAngle - 90) * (Math.PI / 180);
-                const endRad = (endAngle - 90) * (Math.PI / 180);
-                
-                const startX = 50 + 50 * Math.cos(startRad);
-                const startY = 50 + 50 * Math.sin(startRad);
-                const endX = 50 + 50 * Math.cos(endRad);
-                const endY = 50 + 50 * Math.sin(endRad);
-                
-                const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
-                slice.style.clipPath = clipPath;
-                
-                // Use the same color for wheel and list
-                const color = colors[i % colors.length];
-                slice.style.backgroundColor = color;
-                
-                // Add a visible number to the slice for debugging
-                const sliceNumber = document.createElement('div');
-                sliceNumber.className = 'slice-number';
-                sliceNumber.textContent = i + 1; // 1-based numbering for users
-                slice.appendChild(sliceNumber);
-                
-                slice.dataset.index = i;
-                wheel.appendChild(slice);
+            // Update food display
+            if (foods.length === 0) {
+                foodDisplay.textContent = 'Press Randomize';
+                foodDisplay.style.backgroundColor = '#3498db';
             }
+        }
+        
+        // Update the items list display
+        function updateItemsList() {
+            itemsList.innerHTML = '';
+            itemCount.textContent = `${foods.length} items available`;
             
-            // Now create list items in normal order
-            foods.forEach((food, i) => {
-                // Choose color by index
-                const color = colors[i % colors.length];
-                
-                // CREATE LIST ITEM
+            foods.forEach((food, index) => {
                 const row = document.createElement('div');
                 row.className = 'item-row';
-                row.dataset.index = i;
+                row.dataset.index = index;
                 
                 const indexSpan = document.createElement('span');
                 indexSpan.className = 'item-index';
-                indexSpan.textContent = (i + 1) + '.';
-                
-                const colorDiv = document.createElement('div');
-                colorDiv.className = 'item-color';
-                colorDiv.style.backgroundColor = color;
+                indexSpan.textContent = (index + 1) + '.';
                 
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'item-name';
                 nameDiv.textContent = food;
                 
                 row.appendChild(indexSpan);
-                row.appendChild(colorDiv);
-                row.appendChild(nameDiv);
-                
-                itemsList.appendChild(row);
-            });
-        }
-        
-        // Assign colors to foods consistently
-        function assignColorsToFoods(foodArray) {
-            return foodArray.map((food, index) => ({
-                food: food,
-                color: colors[index % colors.length],
-                index: index
-            }));
-        }
-        
-        // Update the items list display
-        function updateItemsList(coloredFoods) {
-            itemsList.innerHTML = '';
-            itemCount.textContent = `${foods.length} items on the wheel`;
-            
-            coloredFoods.forEach(item => {
-                const row = document.createElement('div');
-                row.className = 'item-row';
-                row.dataset.index = item.index;
-                
-                const indexSpan = document.createElement('span');
-                indexSpan.className = 'item-index';
-                indexSpan.textContent = (item.index + 1) + '.';
-                
-                const colorDiv = document.createElement('div');
-                colorDiv.className = 'item-color';
-                colorDiv.style.backgroundColor = item.color;
-                
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'item-name';
-                nameDiv.textContent = item.food;
-                
-                row.appendChild(indexSpan);
-                row.appendChild(colorDiv);
                 row.appendChild(nameDiv);
                 
                 itemsList.appendChild(row);
@@ -591,47 +468,6 @@
         function initializeTextarea() {
             const textarea = document.getElementById('wheel-items');
             textarea.value = foods.join('\n');
-        }
-        
-        // Update the wheel with current foods
-        function updateWheel(coloredFoods) {
-            wheel.innerHTML = '';
-            
-            if (coloredFoods.length === 0) {
-                return;
-            }
-            
-            const sliceAngle = 360 / coloredFoods.length;
-            
-            coloredFoods.forEach((item, index) => {
-                const slice = document.createElement('div');
-                slice.className = 'wheel-slice';
-                
-                // Calculate the start and end angles for this slice
-                const startAngle = index * sliceAngle;
-                const endAngle = (index + 1) * sliceAngle;
-                
-                // Create a custom clip path for this slice to ensure equal areas
-                const startRad = (startAngle - 90) * (Math.PI / 180);
-                const endRad = (endAngle - 90) * (Math.PI / 180);
-                
-                const startX = 50 + 50 * Math.cos(startRad);
-                const startY = 50 + 50 * Math.sin(startRad);
-                const endX = 50 + 50 * Math.cos(endRad);
-                const endY = 50 + 50 * Math.sin(endRad);
-                
-                // Create the clip path: center point to start point to end point
-                const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
-                slice.style.clipPath = clipPath;
-                
-                // Use the EXACT same color object that was used for the list
-                slice.style.backgroundColor = item.color;
-                
-                // Store the index for reference
-                slice.dataset.index = item.index;
-                
-                wheel.appendChild(slice);
-            });
         }
         
         // Highlight an item in the list
@@ -726,35 +562,17 @@
             });
         }
         
-        // Spin the wheel
-        function spinWheel() {
-            // Don't allow spinning if already spinning or no foods
-            if (isSpinning || foods.length === 0) return;
+        // Randomize food selection
+        function randomizeFood() {
+            // Don't allow randomizing if already in progress or no foods
+            if (isRandomizing || foods.length === 0) return;
             
-            isSpinning = true;
-            spinButton.disabled = true; // Disable button while spinning
-            resultDiv.classList.remove('visible');
-            resultDiv.innerText = '';
+            isRandomizing = true;
+            randomizeButton.disabled = true; // Disable button while randomizing
             
-            // Get the current rotation and reset it cleanly
-            const currentTransform = window.getComputedStyle(wheel).getPropertyValue('transform');
-            let currentRotation = 0;
-            
-            if (currentTransform !== 'none') {
-                // Extract current rotation if there is one
-                const values = currentTransform.split('(')[1].split(')')[0].split(',');
-                const a = values[0];
-                const b = values[1];
-                currentRotation = Math.round(Math.atan2(b, a) * (180/Math.PI));
-                currentRotation = (currentRotation < 0) ? currentRotation + 360 : currentRotation;
-            }
-            
-            // Force a reset without animation
-            wheel.style.transition = 'none';
-            wheel.style.transform = `rotate(${currentRotation}deg)`;
-            
-            // Force a reflow to ensure the transition reset is applied
-            void wheel.offsetWidth;
+            // Start animation
+            foodDisplay.classList.add('animated');
+            foodDisplay.textContent = 'Choosing...';
             
             // Use multiple sources of randomness for true randomness
             const now = Date.now();
@@ -762,37 +580,44 @@
             const randomSeed2 = Math.random();
             const randomSeed3 = performance.now();
             
-            // Combine random sources using XOR-like operation
+            // Combine random sources
             let combinedRandom = ((now % 100) / 100 + randomSeed1 + randomSeed2 + (randomSeed3 % 10) / 10) % 1;
             
-            // Fisher-Yates shuffle of indices for even more randomness
+            // Fisher-Yates shuffle
             let indices = Array.from({length: foods.length}, (_, i) => i);
             for (let i = indices.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [indices[i], indices[j]] = [indices[j], indices[i]];
             }
             
-            // Use combinedRandom to select from shuffled indices
+            // Select a random food
             const randomIndex = indices[Math.floor(combinedRandom * indices.length)];
             
-            // Calculate final rotation
-            const sliceAngle = 360 / foods.length;
-            const extraSpins = 5; // Number of full rotations
+            // Simulate choosing process
+            let counter = 0;
+            const cycleSpeed = 100; // ms
+            const cycles = 15; // Number of foods to show before landing on selection
             
-            // Note: Because we reversed the wheel slice order, we need to calculate differently
-            // The 0-indexed food is at the top of the wheel 
-            const finalAngle = currentRotation + (extraSpins * 360) + (360 - (randomIndex * sliceAngle));
-            
-            // Apply the spin with a slight delay to ensure the browser has processed the reset
-            setTimeout(() => {
-                wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-                wheel.style.transform = `rotate(${finalAngle}deg)`;
-                
-                // Show result after spinning is complete
-                setTimeout(() => {
+            const showRandomFood = () => {
+                if (counter < cycles) {
+                    // Show random foods quickly
+                    const tempIndex = Math.floor(Math.random() * foods.length);
+                    foodDisplay.textContent = foods[tempIndex];
+                    counter++;
+                    setTimeout(showRandomFood, cycleSpeed);
+                } else {
+                    // Final selection
                     const selectedFood = foods[randomIndex];
-                    resultDiv.innerText = `You should order: ${selectedFood}`;
-                    resultDiv.classList.add('visible');
+                    
+                    // Stop animation
+                    foodDisplay.classList.remove('animated');
+                    
+                    // Set appealing background color
+                    const foodColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
+                    foodDisplay.style.backgroundColor = foodColors[randomIndex % foodColors.length];
+                    
+                    // Show result
+                    foodDisplay.textContent = selectedFood;
                     highlightItem(randomIndex);
                     
                     // Create celebration effect
@@ -801,13 +626,16 @@
                     // Add to history
                     addToHistory(selectedFood);
                     
-                    // Re-enable the spin button
+                    // Re-enable randomize button
                     setTimeout(() => {
-                        isSpinning = false;
-                        spinButton.disabled = false;
+                        isRandomizing = false;
+                        randomizeButton.disabled = false;
                     }, 500);
-                }, 5100);
-            }, 50);
+                }
+            };
+            
+            // Start the food selection animation
+            showRandomFood();
         }
         
         // Save current menu
@@ -851,7 +679,8 @@
                 foods = [...restaurants[selectedRestaurant]];
                 const textarea = document.getElementById('wheel-items');
                 textarea.value = foods.join('\n');
-                updateWheelFromTextarea();
+                updateItemsList();
+                randomizeButton.disabled = false;
             }
         }
         
@@ -868,8 +697,8 @@
         }
         
         // Event listeners
-        updateWheelButton.addEventListener('click', updateWheelFromTextarea);
-        spinButton.addEventListener('click', spinWheel);
+        updateListButton.addEventListener('click', updateFoodList);
+        randomizeButton.addEventListener('click', randomizeFood);
         saveMenuButton.addEventListener('click', saveMenu);
         loadMenuButton.addEventListener('click', loadMenu);
         deleteMenuButton.addEventListener('click', deleteMenu);
