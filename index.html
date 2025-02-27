@@ -259,8 +259,7 @@
             height: 10px;
             background-color: #f00;
             opacity: 0;
-            animation: confetti-fall 3s ease-in forwards;
-            z-index: 1000;
+            z-index: 9999;
         }
         
         @keyframes confetti-fall {
@@ -379,9 +378,8 @@
             </div>
         </div>
         
-        <div class="button-group" style="display: flex; justify-content: center; gap: 10px;">
+        <div style="margin: 20px 0;">
             <button id="spin-button">Spin the Wheel!</button>
-            <button id="clear-button">Clear All</button>
         </div>
         
         <div class="result" id="result"></div>
@@ -411,7 +409,6 @@
         const itemsList = document.getElementById('items-list');
         const itemCount = document.getElementById('item-count');
         const spinButton = document.getElementById('spin-button');
-        const clearButton = document.getElementById('clear-button');
         const resultDiv = document.getElementById('result');
         const restaurantNameInput = document.getElementById('restaurant-name');
         const saveMenuButton = document.getElementById('save-menu');
@@ -459,10 +456,8 @@
             
             if (foods.length > 0) {
                 spinButton.disabled = false;
-                clearButton.disabled = false;
             } else {
                 spinButton.disabled = true;
-                clearButton.disabled = true;
             }
         }
         
@@ -554,6 +549,9 @@
         
         // Create confetti effect
         function createConfetti() {
+            // First remove any existing confetti
+            document.querySelectorAll('.confetti').forEach(el => el.remove());
+            
             const confettiCount = 100;
             const container = document.body;
             
@@ -563,22 +561,34 @@
                 
                 // Random position, color, size, and delay
                 const left = Math.random() * 100;
+                const top = Math.random() * 20 - 20; // Start above viewport
                 const confettiColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
                 const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
                 const size = Math.random() * 10 + 5;
-                const delay = Math.random() * 3;
+                const delay = Math.random() * 1.5; // Shorter delay
                 
-                confetti.style.left = `${left}vw`;
-                confetti.style.backgroundColor = color;
-                confetti.style.width = `${size}px`;
-                confetti.style.height = `${size}px`;
-                confetti.style.animationDelay = `${delay}s`;
+                // Apply styles directly
+                Object.assign(confetti.style, {
+                    position: 'fixed',
+                    left: `${left}vw`,
+                    top: `${top}px`,
+                    backgroundColor: color,
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    zIndex: '9999',
+                    borderRadius: `${Math.random() > 0.5 ? '50%' : '0'}`,
+                    transform: 'rotate(0deg)',
+                    opacity: '1',
+                    animation: `confetti-fall 3s ease-in ${delay}s forwards`
+                });
                 
                 container.appendChild(confetti);
                 
                 // Remove confetti after animation
                 setTimeout(() => {
-                    confetti.remove();
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
                 }, (delay + 3) * 1000); // 3s for animation + delay
             }
         }
@@ -762,7 +772,6 @@
         // Event listeners
         updateWheelButton.addEventListener('click', updateWheelFromTextarea);
         spinButton.addEventListener('click', spinWheel);
-        clearButton.addEventListener('click', clearAll);
         saveMenuButton.addEventListener('click', saveMenu);
         loadMenuButton.addEventListener('click', loadMenu);
         deleteMenuButton.addEventListener('click', deleteMenu);
