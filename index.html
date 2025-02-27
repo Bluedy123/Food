@@ -451,8 +451,7 @@
                 .filter(item => item !== '');
             
             foods = [...items];
-            updateItemsList();
-            updateWheel();
+            updateItemsAndWheel();
             
             if (foods.length > 0) {
                 spinButton.disabled = false;
@@ -643,11 +642,9 @@
             foods = [];
             const textarea = document.getElementById('wheel-items');
             textarea.value = '';
-            updateItemsList();
-            updateWheel();
+            updateItemsAndWheel();
             resultDiv.classList.remove('visible');
             spinButton.disabled = true;
-            clearButton.disabled = true;
         }
         
         // Spin the wheel
@@ -775,8 +772,7 @@
                 foods = [...restaurants[selectedRestaurant]];
                 const textarea = document.getElementById('wheel-items');
                 textarea.value = foods.join('\n');
-                updateItemsList();
-                updateWheel();
+                updateItemsAndWheel();
                 spinButton.disabled = false;
             }
         }
