@@ -441,6 +441,8 @@
         function init() {
             updateSavedRestaurants();
             updateHistoryDisplay();
+            // Initialize the wheel
+            updateWheelFromTextarea();
         }
         
         // Update the wheel from textarea
@@ -451,36 +453,48 @@
                 .filter(item => item !== '');
             
             foods = [...items];
-            updateItemsAndWheel();
             
-            if (foods.length > 0) {
-                spinButton.disabled = false;
-            } else {
-                spinButton.disabled = true;
-            }
+            // Create a consistent color mapping for foods
+            const coloredFoods = assignColorsToFoods(foods);
+            
+            // Update the UI
+            updateItemsList(coloredFoods);
+            updateWheel(coloredFoods);
+            
+            // Update button state
+            spinButton.disabled = foods.length === 0;
+        }
+        
+        // Assign colors to foods consistently
+        function assignColorsToFoods(foodArray) {
+            return foodArray.map((food, index) => ({
+                food: food,
+                color: colors[index % colors.length],
+                index: index
+            }));
         }
         
         // Update the items list display
-        function updateItemsList() {
+        function updateItemsList(coloredFoods) {
             itemsList.innerHTML = '';
             itemCount.textContent = `${foods.length} items on the wheel`;
             
-            foods.forEach((food, index) => {
+            coloredFoods.forEach(item => {
                 const row = document.createElement('div');
                 row.className = 'item-row';
-                row.dataset.index = index;
+                row.dataset.index = item.index;
                 
                 const indexSpan = document.createElement('span');
                 indexSpan.className = 'item-index';
-                indexSpan.textContent = (index + 1) + '.';
+                indexSpan.textContent = (item.index + 1) + '.';
                 
                 const colorDiv = document.createElement('div');
                 colorDiv.className = 'item-color';
-                colorDiv.style.backgroundColor = colors[index % colors.length];
+                colorDiv.style.backgroundColor = item.color;
                 
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'item-name';
-                nameDiv.textContent = food;
+                nameDiv.textContent = item.food;
                 
                 row.appendChild(indexSpan);
                 row.appendChild(colorDiv);
@@ -497,26 +511,18 @@
         }
         
         // Update the wheel with current foods
-        function updateWheel() {
+        function updateWheel(coloredFoods) {
             wheel.innerHTML = '';
             
-            if (foods.length === 0) {
+            if (coloredFoods.length === 0) {
                 return;
             }
             
-            const sliceAngle = 360 / foods.length;
+            const sliceAngle = 360 / coloredFoods.length;
             
-            // First build an array of slice data to match the list
-            const slices = foods.map((food, index) => ({
-                food,
-                color: colors[index % colors.length],
-                index
-            }));
-            
-            // Now create slices in the same order as the list
-            slices.forEach((slice, index) => {
-                const sliceElem = document.createElement('div');
-                sliceElem.className = 'wheel-slice';
+            coloredFoods.forEach((item, index) => {
+                const slice = document.createElement('div');
+                slice.className = 'wheel-slice';
                 
                 // Calculate the start and end angles for this slice
                 const startAngle = index * sliceAngle;
@@ -533,15 +539,15 @@
                 
                 // Create the clip path: center point to start point to end point
                 const clipPath = `polygon(50% 50%, ${startX}% ${startY}%, ${endX}% ${endY}%)`;
-                sliceElem.style.clipPath = clipPath;
+                slice.style.clipPath = clipPath;
                 
-                // Use the exact same color as in the list
-                sliceElem.style.backgroundColor = slice.color;
+                // Use the EXACT same color object that was used for the list
+                slice.style.backgroundColor = item.color;
                 
                 // Store the index for reference
-                sliceElem.dataset.index = slice.index;
+                slice.dataset.index = item.index;
                 
-                wheel.appendChild(sliceElem);
+                wheel.appendChild(slice);
             });
         }
         
@@ -637,16 +643,6 @@
             });
         }
         
-        // Clear all foods
-        function clearAll() {
-            foods = [];
-            const textarea = document.getElementById('wheel-items');
-            textarea.value = '';
-            updateItemsAndWheel();
-            resultDiv.classList.remove('visible');
-            spinButton.disabled = true;
-        }
-        
         // Spin the wheel
         function spinWheel() {
             // Don't allow spinning if already spinning or no foods
@@ -700,8 +696,6 @@
             const sliceAngle = 360 / foods.length;
             const extraSpins = 5; // Number of full rotations
             // We add the current rotation to ensure smooth continuation
-            // The wheel rotation needs to be calculated carefully to match the wheel's layout
-            // The 0th slice is at the top, and they go clockwise
             const finalAngle = currentRotation + (extraSpins * 360) + (360 - ((randomIndex * sliceAngle) % 360));
             
             // Apply the spin with a slight delay to ensure the browser has processed the reset
@@ -772,7 +766,14 @@
                 foods = [...restaurants[selectedRestaurant]];
                 const textarea = document.getElementById('wheel-items');
                 textarea.value = foods.join('\n');
-                updateItemsAndWheel();
+                
+                // Create a consistent color mapping for foods
+                const coloredFoods = assignColorsToFoods(foods);
+                
+                // Update the UI
+                updateItemsList(coloredFoods);
+                updateWheel(coloredFoods);
+                
                 spinButton.disabled = false;
             }
         }
@@ -799,7 +800,6 @@
         // Initialize the app
         init();
         initializeTextarea();
-        updateWheelFromTextarea(); // Initialize button states
     </script>
 </body>
 </html>
